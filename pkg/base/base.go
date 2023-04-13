@@ -76,19 +76,23 @@ func (s *Sequencer) Play(c Clip) {
 	fmt.Printf("play() @ %vbpm, %vms per beat\n", s.Bpm, beat_duration_ms)
 
 	ticker := time.NewTicker(time.Duration(beat_duration_ms) * time.Millisecond)
-	i := 0
-	for range ticker.C {
-		if i < c.Steps() {
-			cur := c.next()
-			fmt.Printf("%v ", cur.Value)
-			go m.Send(uint8(cur.Value), note_duration_ms)
-			i++
-		} else {
-			break
-		}
-	}
 
-	m.Panic()
+	go func() {
+		i := 0
+		for range ticker.C {
+			if i < c.Steps() {
+				cur := c.next()
+				// fmt.Printf("%v ", cur.Value)
+				m.Send(uint8(cur.Value), note_duration_ms)
+				i++
+			} else {
+				break
+			}
+		}
+		fmt.Printf("end\n")
+		m.Panic()
+	}()
+
 }
 
 // close over current position
@@ -96,7 +100,7 @@ func (c *Clip) getIterator() func() Note {
 	pos := 0
 
 	return func() Note {
-		fmt.Printf("next() pos: %v\n", pos)
+		// fmt.Printf("next() pos: %v\n", pos)
 		next := c.data[pos]
 		next.Print()
 		if pos < c.Steps()-1 {
