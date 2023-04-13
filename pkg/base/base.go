@@ -12,98 +12,61 @@ type Note struct {
 	Value int
 }
 
-func (n *Note) Print() {
-	fmt.Printf("note={midiValue: %v}\n", n.Value)
+func (note *Note) Print() {
+	fmt.Printf("note={midiValue: %v}\n", note.Value)
 }
 
 type Clip struct {
 	bars     int
 	data     []Note
 	iterator func() Note
+	loop     bool
 }
 
-func NewDefaultClip() Clip {
+func NewClip() Clip {
 	clip := Clip{}
-	clip.Init(16, 4)
+	clip.Init(16, 4, true)
 	return clip
 }
 
-func (c *Clip) Init(steps int, bars int) {
-	c.data = make([]Note, steps)
-	c.bars = bars
-	c.iterator = c.getIterator()
+func (clip *Clip) Init(steps int, bars int, loop bool) {
+	clip.data = make([]Note, steps)
+	clip.bars = bars
+	clip.iterator = clip.getIterator()
+	clip.loop = loop
+
 }
 
-func (c *Clip) Randomize() {
-	for i := 0; i < c.Steps(); i++ {
-		c.data[i] = Note{Value: rand.Intn(100)}
+func (clip *Clip) Randomize() {
+	for i := 0; i < clip.Steps(); i++ {
+		clip.data[i] = Note{Value: rand.Intn(100)}
 	}
 }
 
-func (c *Clip) Steps() int {
-	return len(c.data)
+func (clip *Clip) Steps() int {
+	return len(clip.data)
 }
 
-func (c *Clip) Bars() int {
-	return c.bars
+func (clip *Clip) Bars() int {
+	return clip.bars
 }
 
-func (c *Clip) Print() {
-	fmt.Printf("clip={steps: %v, bars: %v, data: %v}\n", c.Steps(), c.Bars(), c.data)
-	for i := 0; i < c.Steps(); i++ {
-		fmt.Printf("%v ", c.data[i])
+func (clip *Clip) Print() {
+	fmt.Printf("clip={steps: %v, bars: %v, data: %v}\n", clip.Steps(), clip.Bars(), clip.data)
+	for i := 0; i < clip.Steps(); i++ {
+		fmt.Printf("%v ", clip.data[i])
 	}
 	fmt.Println()
 }
 
-type Sequencer struct {
-	Bpm int
-}
-
-func (s *Sequencer) Print() {
-	fmt.Printf("sequencer={Bpm: %v}\n", s.Bpm)
-}
-
-func (s *Sequencer) Play(c Clip) {
-
-	// FIXME
-	m := midicontext.MidiContext{}
-	m.Init()
-
-	beat_duration_ms := 60.0 * 1000 / float64(s.Bpm)
-	note_duration_ms := 150.0 // FIXME: user param
-
-	fmt.Printf("play() @ %vbpm, %vms per beat\n", s.Bpm, beat_duration_ms)
-
-	ticker := time.NewTicker(time.Duration(beat_duration_ms) * time.Millisecond)
-
-	go func() {
-		i := 0
-		for range ticker.C {
-			if i < c.Steps() {
-				cur := c.next()
-				// fmt.Printf("%v ", cur.Value)
-				m.Send(uint8(cur.Value), note_duration_ms)
-				i++
-			} else {
-				break
-			}
-		}
-		fmt.Printf("end\n")
-		m.Panic()
-	}()
-
-}
-
-// close over current position
-func (c *Clip) getIterator() func() Note {
+func (clip *Clip) getIterator() func() Note {
 	pos := 0
 
 	return func() Note {
 		// fmt.Printf("next() pos: %v\n", pos)
-		next := c.data[pos]
+		next := clip.data[pos]
 		next.Print()
-		if pos < c.Steps()-1 {
+		if pos < clip.Steps()-1 {
 			pos++
 		} else {
 			pos = 0
@@ -111,6 +74,72 @@ func (c *Clip) getIterator() func() Note {
 		return next
 	}
 }
-func (c *Clip) next() Note {
-	return c.iterator()
+func (clip *Clip) next() Note {
+	return clip.iterator()
+}
+
+type Sequencer struct {
+	Bpm int
+
+	beatDurationMs float64
+	midiCtx        *midicontext.MidiContext
+
+	ticker *time.Ticker
+	done   chan bool
+}
+
+func NewSequencer(bpm int) Sequencer {
+	sequencer := Sequencer{Bpm: bpm}
+	sequencer.Init()
+	return sequencer
+}
+
+func (sequencer *Sequencer) Init() {
+	sequencer.midiCtx = &midicontext.MidiContext{}
+	sequencer.midiCtx.Init()
+	sequencer.midiCtx.Panic()
+	sequencer.beatDurationMs = 60.0 * 1000 / float64(sequencer.Bpm)
+}
+
+func (sequencer *Sequencer) Play(clip Clip) {
+	note_duration_ms := 400.0 // FIXME: user param
+	fmt.Printf("play() @ %vbpm, %vms per beat\n", sequencer.Bpm, sequencer.beatDurationMs)
+
+	sequencer.ticker = time.NewTicker(time.Duration(sequencer.beatDurationMs) * time.Millisecond)
+	sequencer.done = make(chan bool)
+
+	go func() {
+		i := 0
+		for {
+			select {
+			case <-sequencer.done:
+				fmt.Printf("end clip\n")
+				return
+			case t := <-sequencer.ticker.C:
+				fmt.Println("Current time: ", t)
+				note := clip.next()
+
+				go sequencer.midiCtx.Send(uint8(note.Value), note_duration_ms)
+
+				if i < clip.Steps()-1 {
+					i++
+				} else {
+					i = 0
+					if !clip.loop {
+						return
+					}
+				}
+			}
+		}
+	}()
+}
+
+func (sequencer *Sequencer) Stop() {
+	sequencer.ticker.Stop()
+	sequencer.done <- true
+	fmt.Printf("Ticker stopped\n")
+}
+
+func (sequencer *Sequencer) Print() {
+	fmt.Printf("sequencer={Bpm: %v}\n", sequencer.Bpm)
 }

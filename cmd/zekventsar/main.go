@@ -11,20 +11,32 @@ func main() {
 	log.Println("zekventsar v0.1")
 
 	exampleClip := base.Clip{}
-	exampleClip.Init(8, 2)
+	exampleClip.Init(8, 2, true)
 	exampleClip.Randomize()
 	exampleClip.Print()
 
 	exampleSequencer := base.Sequencer{Bpm: 96}
+	exampleSequencer.Init()
 	exampleSequencer.Print()
+
 	exampleSequencer.Play(exampleClip)
-	time.Sleep(20 * time.Second)
-	// 	exampleClip2 := base.NewDefaultClip()
+	time.Sleep(3 * time.Second)
+	exampleSequencer.Stop()
 
-	// 	exampleClip2.Randomize()
-	// 	exampleSequencer2 := base.Sequencer{Bpm: 180}
-	// 	exampleSequencer2.Play(exampleClip2)
+	time.Sleep(3 * time.Second)
 
-	// exampleSequencer3 := base.Sequencer{Bpm: 300}
-	// exampleSequencer3.Play(exampleClip2)
+	exampleClip2 := base.NewClip()
+	exampleClip2.Randomize()
+	exampleClip2.Print()
+
+	exampleSequencer2 := base.NewSequencer(180)
+	exampleSequencer2.Play(exampleClip2)
+
+	time.Sleep(2 * time.Second)
+	exampleSequencer2.Stop()
+
+	time.Sleep(2 * time.Second)
+
+	exampleSequencer2.Play(exampleClip2)
+	time.Sleep(30 * time.Second)
 }
