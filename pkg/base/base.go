@@ -71,20 +71,24 @@ func (s *Sequencer) Play(c Clip) {
 	m.Init()
 
 	beat_duration_ms := 60.0 * 1000 / float64(s.Bpm)
+	note_duration_ms := 150.0 // FIXME: user param
+
 	fmt.Printf("play() @ %vbpm, %vms per beat\n", s.Bpm, beat_duration_ms)
 
 	ticker := time.NewTicker(time.Duration(beat_duration_ms) * time.Millisecond)
 	i := 0
-	for _ = range ticker.C {
+	for range ticker.C {
 		if i < c.Steps() {
 			cur := c.next()
 			fmt.Printf("%v ", cur.Value)
-			m.Send(uint8(cur.Value), beat_duration_ms)
+			go m.Send(uint8(cur.Value), note_duration_ms)
 			i++
 		} else {
 			break
 		}
 	}
+
+	m.Panic()
 }
 
 // close over current position

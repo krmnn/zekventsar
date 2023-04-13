@@ -23,6 +23,12 @@ func (m *MidiContext) Init() {
 	// defer midi.CloseDriver()
 }
 
+func (m *MidiContext) Panic() {
+	for i := 0; i < 128; i++ {
+		m.send(midi.NoteOff(m.channel, uint8(i)))
+	}
+}
+
 func (m *MidiContext) Send(note uint8, duration_ms float64) {
 
 	// if previous note is passed we mute it before triggering new note

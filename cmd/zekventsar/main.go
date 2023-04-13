@@ -26,5 +26,4 @@ func main() {
 
 	exampleSequencer3 := base.Sequencer{Bpm: 300}
 	exampleSequencer3.Play(exampleClip)
-
 }
