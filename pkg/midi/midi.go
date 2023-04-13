@@ -2,32 +2,40 @@ package midicontext
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/krmnn/zekventsar/pkg/base"
 	"gitlab.com/gomidi/midi/v2"
+	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
 
-type midiContext struct {
-	send func(msg midi.Message) error
+type MidiContext struct {
+	channel uint8
+	send    func(msg midi.Message) error
 }
 
-func (m *midiContext) Init() {
+func (m *MidiContext) Init() {
+
+	m.channel = 0
+
 	fmt.Println(midi.GetOutPorts())
-	fmt.Printf("\n\n")
-
 	var out, _ = midi.OutPort(0)
-	// var out = OutByName("my synth")
-
-	// creates a sender function to the out port
 	m.send, _ = midi.SendTo(out)
-
-	defer midi.CloseDriver()
-
+	// defer midi.CloseDriver()
 }
 
-func (m *midiContext) Send(note base.Note) { // send some messages
-	// channel, key, velocity
-	m.send(midi.NoteOn(0, midi.Db(5), 100))
-	m.send(midi.NoteOff(0, midi.Db(5)))
+func (m *MidiContext) Send(note uint8, duration_ms float64) {
+
+	// if previous note is passed we mute it before triggering new note
+
+	error := m.send(midi.NoteOn(m.channel, note, 100))
+	if error != nil {
+		fmt.Println(error.Error())
+	}
+	time.Sleep(time.Duration(duration_ms) * time.Millisecond)
+
+	error = m.send(midi.NoteOff(m.channel, note))
+	if error != nil {
+		fmt.Println(error.Error())
+	}
 
 }

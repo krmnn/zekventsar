@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
+
 	"github.com/krmnn/zekventsar/pkg/base"
-	
 )
 
 func main() {
@@ -24,9 +24,15 @@ func main() {
 	exampleSequencer.Print()
 	// exampleSequencer.play(exampleClip)
 
-	// exampleSequencer.bpm = 180
-	// exampleSequencer.print()
-
 	exampleSequencer.Play(exampleClip)
+
+	exampleClip.Randomize()
+	exampleSequencer2 := base.Sequencer{Bpm: 180}
+	exampleSequencer2.Play(exampleClip)
+
+	exampleClip3 := base.Clip{}
+	exampleClip3.Init(80)
+	exampleClip3.Randomize()
+	exampleSequencer.Play(exampleClip3)
 
 }

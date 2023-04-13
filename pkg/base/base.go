@@ -3,7 +3,8 @@ package base
 import (
 	"fmt"
 	"math/rand"
-	"time"
+
+	midicontext "github.com/krmnn/zekventsar/pkg/midi"
 )
 
 type Note struct {
@@ -51,12 +52,18 @@ func (s *Sequencer) Print() {
 }
 
 func (s *Sequencer) Play(c Clip) {
+
+	// FIXME
+	m := midicontext.MidiContext{}
+	m.Init()
+
 	beat_duration_ms := 60.0 * 1000 / float64(s.Bpm)
-	fmt.Printf("play() @ %vBpm, %vms per beat\n", s.Bpm, beat_duration_ms)
+	fmt.Printf("play() @ %vbpm, %vms per beat\n", s.Bpm, beat_duration_ms)
 
 	for i := 0; i < c.len(); i++ {
-		fmt.Printf("%v ", c.next())
-		time.Sleep(time.Duration(beat_duration_ms) * time.Millisecond)
+		cur := c.next()
+		fmt.Printf("%v ", cur.Value)
+		m.Send(uint8(cur.Value), beat_duration_ms)
 	}
 }
 
