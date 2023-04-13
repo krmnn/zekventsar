@@ -30,9 +30,6 @@ func (m *MidiContext) Panic() {
 }
 
 func (m *MidiContext) Send(note uint8, duration_ms float64) {
-
-	// if previous note is passed we mute it before triggering new note
-
 	error := m.send(midi.NoteOn(m.channel, note, 100))
 	if error != nil {
 		fmt.Println(error.Error())
@@ -43,5 +40,4 @@ func (m *MidiContext) Send(note uint8, duration_ms float64) {
 	if error != nil {
 		fmt.Println(error.Error())
 	}
-
 }
