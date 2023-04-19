@@ -8,6 +8,8 @@ type Sequencer struct {
 	Bpm     int
 	Running bool
 
+	Pos int
+
 	beatDurationMs float64
 	midiCtx        *MidiContext
 
@@ -48,7 +50,7 @@ func (sequencer *Sequencer) Play(clip Clip) {
 			case <-sequencer.ticker.C:
 				// fmt.Println("Current time: ", t)
 				note := clip.Next()
-
+				sequencer.Pos = i
 				go sequencer.midiCtx.Send(uint8(note.Value), note_duration_ms)
 
 				if i < clip.Steps()-1 {
