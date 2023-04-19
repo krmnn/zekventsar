@@ -1,4 +1,4 @@
-package midicontext
+package zekventsar
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ func (m *MidiContext) Init() {
 
 	m.channel = 0
 
-	fmt.Println(midi.GetOutPorts())
+	// fmt.Println(midi.GetOutPorts())
 	var out, _ = midi.OutPort(0)
 	m.send, _ = midi.SendTo(out)
 	// defer midi.CloseDriver()
