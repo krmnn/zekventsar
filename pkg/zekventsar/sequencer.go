@@ -5,7 +5,7 @@ import (
 )
 
 type Sequencer struct {
-	Bpm     int
+	Bpm     float64
 	Running bool
 
 	Pos int
@@ -17,7 +17,7 @@ type Sequencer struct {
 	done   chan bool
 }
 
-func NewSequencer(bpm int) Sequencer {
+func NewSequencer(bpm float64) Sequencer {
 	sequencer := Sequencer{Bpm: bpm}
 	sequencer.Init()
 	return sequencer
@@ -27,7 +27,7 @@ func (sequencer *Sequencer) Init() {
 	sequencer.midiCtx = &MidiContext{}
 	sequencer.midiCtx.Init()
 	sequencer.midiCtx.Panic()
-	sequencer.beatDurationMs = 60.0 * 1000 / float64(sequencer.Bpm)
+	sequencer.beatDurationMs = 60.0 * 1000 / sequencer.Bpm
 	sequencer.Running = false
 }
 
