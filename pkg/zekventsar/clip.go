@@ -1,4 +1,4 @@
-package clip
+package zekventsar
 
 import (
 	"fmt"
@@ -16,7 +16,8 @@ func (note *Note) Print() {
 
 type Clip struct {
 	bars     int
-	data     []Note
+	Notes    []Note
+	pos      int
 	iterator func() Note
 	loop     bool
 }
@@ -28,55 +29,53 @@ func NewClip() Clip {
 }
 
 func (clip *Clip) Init(steps int, bars int, loop bool) {
-	clip.data = make([]Note, steps)
+	clip.Notes = make([]Note, steps)
 	clip.bars = bars
-	clip.iterator = clip.getIterator()
+	clip.pos = 0
+	clip.iterator = func() Note {
+		// fmt.Printf("next() pos: %v\n", pos)
+		next := clip.Notes[clip.pos]
+		// next.Print()
+		if clip.pos < clip.Steps()-1 {
+			clip.pos++
+		} else {
+			clip.pos = 0
+		}
+		return next
+	}
 	clip.loop = loop
-
 }
 
 func (clip *Clip) Randomize() {
 	for i := 0; i < clip.Steps(); i++ {
-		clip.data[i] = Note{Value: rand.Intn(100)}
+		clip.Notes[i] = Note{Value: rand.Intn(100)}
 	}
 }
 func (clip *Clip) SetNote(position int, note Note) {
 	if position < clip.Steps() {
-		clip.data[position] = note
+		clip.Notes[position] = note
 	}
 }
 
 func (clip *Clip) Steps() int {
-	return len(clip.data)
+	return len(clip.Notes)
 }
 
 func (clip *Clip) Bars() int {
 	return clip.bars
 }
-
-func (clip *Clip) Print() {
-	fmt.Printf("clip={steps: %v, bars: %v, data: %v}\n", clip.Steps(), clip.Bars(), clip.data)
-	for i := 0; i < clip.Steps(); i++ {
-		fmt.Printf("%v ", clip.data[i])
-	}
-	fmt.Println()
+func (clip *Clip) Pos() int {
+	return clip.pos
 }
 
-func (clip *Clip) getIterator() func() Note {
-	pos := 0
+// func (clip *Clip) Print() {
+// 	fmt.Printf("clip={steps: %v, bars: %v, data: %v}\n", clip.Steps(), clip.Bars(), clip.Notes)
+// 	for i := 0; i < clip.Steps(); i++ {
+// 		fmt.Printf("%v ", clip.Notes[i])
+// 	}
+// 	fmt.Println()
+// }
 
-	return func() Note {
-		// fmt.Printf("next() pos: %v\n", pos)
-		next := clip.data[pos]
-		next.Print()
-		if pos < clip.Steps()-1 {
-			pos++
-		} else {
-			pos = 0
-		}
-		return next
-	}
-}
 func (clip *Clip) Next() Note {
 	return clip.iterator()
 }

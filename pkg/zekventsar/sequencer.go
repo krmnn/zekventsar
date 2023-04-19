@@ -1,18 +1,15 @@
-package sequencer
+package zekventsar
 
 import (
-	"fmt"
 	"time"
-
-	"github.com/krmnn/zekventsar/pkg/clip"
-	midicontext "github.com/krmnn/zekventsar/pkg/midi"
 )
 
 type Sequencer struct {
-	Bpm int
+	Bpm       int
+	IsStarted bool
 
 	beatDurationMs float64
-	midiCtx        *midicontext.MidiContext
+	midiCtx        *MidiContext
 
 	ticker *time.Ticker
 	done   chan bool
@@ -25,28 +22,31 @@ func NewSequencer(bpm int) Sequencer {
 }
 
 func (sequencer *Sequencer) Init() {
-	sequencer.midiCtx = &midicontext.MidiContext{}
+	sequencer.midiCtx = &MidiContext{}
 	sequencer.midiCtx.Init()
 	sequencer.midiCtx.Panic()
 	sequencer.beatDurationMs = 60.0 * 1000 / float64(sequencer.Bpm)
+	sequencer.IsStarted = false
 }
 
-func (sequencer *Sequencer) Play(clip clip.Clip) {
+func (sequencer *Sequencer) Play(clip Clip) {
 	note_duration_ms := 400.0 // TODO: user param
-	fmt.Printf("play() @ %vbpm, %vms per beat\n", sequencer.Bpm, sequencer.beatDurationMs)
+	// fmt.Printf("play() @ %vbpm, %vms per beat\n", sequencer.Bpm, sequencer.beatDurationMs)
 
 	sequencer.ticker = time.NewTicker(time.Duration(sequencer.beatDurationMs) * time.Millisecond)
 	sequencer.done = make(chan bool)
+	sequencer.IsStarted = true
 
 	go func() {
 		i := 0
 		for {
 			select {
 			case <-sequencer.done:
-				fmt.Printf("end clip\n")
+				// fmt.Printf("end clip\n")
+				sequencer.IsStarted = false
 				return
-			case t := <-sequencer.ticker.C:
-				fmt.Println("Current time: ", t)
+			case <-sequencer.ticker.C:
+				// fmt.Println("Current time: ", t)
 				note := clip.Next()
 
 				go sequencer.midiCtx.Send(uint8(note.Value), note_duration_ms)
@@ -67,9 +67,9 @@ func (sequencer *Sequencer) Play(clip clip.Clip) {
 func (sequencer *Sequencer) Stop() {
 	sequencer.ticker.Stop()
 	sequencer.done <- true
-	fmt.Printf("Ticker stopped\n")
+	// fmt.Printf("Ticker stopped\n")
 }
 
 func (sequencer *Sequencer) Print() {
-	fmt.Printf("sequencer={Bpm: %v}\n", sequencer.Bpm)
+	// fmt.Printf("sequencer={Bpm: %v}\n", sequencer.Bpm)
 }
