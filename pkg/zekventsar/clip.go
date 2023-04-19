@@ -3,6 +3,7 @@ package zekventsar
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 )
 
 // TODO: replace with midi lib
@@ -68,13 +69,20 @@ func (clip *Clip) Pos() int {
 	return clip.pos
 }
 
-// func (clip *Clip) Print() {
-// 	fmt.Printf("clip={steps: %v, bars: %v, data: %v}\n", clip.Steps(), clip.Bars(), clip.Notes)
-// 	for i := 0; i < clip.Steps(); i++ {
-// 		fmt.Printf("%v ", clip.Notes[i])
-// 	}
-// 	fmt.Println()
-// }
+func (clip *Clip) PrintSteps() string {
+	var sb strings.Builder
+	for i := 0; i < clip.Steps(); i++ {
+		if i == clip.pos {
+			sb.WriteString(fmt.Sprintf("[%v] ", clip.Notes[i].Value))
+
+		} else {
+			sb.WriteString(fmt.Sprintf("%v ", clip.Notes[i].Value))
+
+		}
+	}
+	fmt.Println(sb.String())
+	return sb.String()
+}
 
 func (clip *Clip) Next() Note {
 	return clip.iterator()

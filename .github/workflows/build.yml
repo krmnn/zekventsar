@@ -9,8 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install alsa
-        run: sudo apt-get install -y libasound2-dev
+      - name: Get dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libx11-dev xorg-dev libwayland-dev libxkbcommon-dev bc libasound2-dev
+        if: ${{ runner.os == 'Linux' }}
 
       - name: Set up Go
         uses: actions/setup-go@v4
