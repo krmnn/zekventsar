@@ -2,7 +2,6 @@ package zekventsar
 
 import (
 	"fmt"
-	"time"
 
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
@@ -29,15 +28,15 @@ func (m *MidiContext) Panic() {
 	}
 }
 
-func (m *MidiContext) Send(note uint8, duration_ms float64) {
-	error := m.send(midi.NoteOn(m.channel, note, 100))
+func (m *MidiContext) Send(note uint8, velocity uint8) {
+	error := m.send(midi.NoteOn(m.channel, note, velocity))
 	if error != nil {
 		fmt.Println(error.Error())
 	}
-	time.Sleep(time.Duration(duration_ms) * time.Millisecond)
+	// time.Sleep(time.Duration(duration_ms) * time.Millisecond)
 
-	error = m.send(midi.NoteOff(m.channel, note))
-	if error != nil {
-		fmt.Println(error.Error())
-	}
+	// error = m.send(midi.NoteOff(m.channel, note))
+	// if error != nil {
+	// 	fmt.Println(error.Error())
+	// }
 }

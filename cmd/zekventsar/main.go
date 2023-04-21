@@ -52,9 +52,13 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 	go func() {
 		for range time.Tick(time.Second) {
 			notes, _ := boundClip.GetValue("Notes")
+			velocities, _ := boundClip.GetValue("Velocities")
+
 			pos, _ := boundSequencer.GetValue("Pos")
 
-			log.Printf("notes = %v", notes)
+			log.Printf("notes      = %v", notes)
+			log.Printf("velocities = %v", velocities)
+
 			label.SetText(fmt.Sprintf("%v\npos: %v", notes, pos))
 		}
 	}()

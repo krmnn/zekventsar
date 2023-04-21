@@ -32,7 +32,7 @@ func (sequencer *Sequencer) Init() {
 }
 
 func (sequencer *Sequencer) Play(clip Clip) {
-	note_duration_ms := 400.0 // TODO: user param
+	// note_duration_ms := 400.0 // TODO: user param
 	// fmt.Printf("play() @ %vbpm, %vms per beat\n", sequencer.Bpm, sequencer.beatDurationMs)
 
 	sequencer.ticker = time.NewTicker(time.Duration(sequencer.beatDurationMs) * time.Millisecond)
@@ -49,9 +49,9 @@ func (sequencer *Sequencer) Play(clip Clip) {
 				return
 			case <-sequencer.ticker.C:
 				// fmt.Println("Current time: ", t)
-				note := clip.Next()
+				note, velocity := clip.Next()
 				sequencer.Pos = i
-				go sequencer.midiCtx.Send(note.Value(), note_duration_ms)
+				go sequencer.midiCtx.Send(note.Value(), velocity)
 
 				if i < clip.Steps()-1 {
 					i++

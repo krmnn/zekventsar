@@ -9,12 +9,14 @@ import (
 )
 
 type Clip struct {
-	bars  int
-	Notes []midi.Note
-	pos   int
-	loop  bool
+	Notes      []midi.Note
+	Velocities []uint8
 
-	iterator func() midi.Note
+	bars int
+	pos  int
+	loop bool
+
+	iterator func() (midi.Note, uint8)
 }
 
 func NewClip() Clip {
@@ -25,9 +27,11 @@ func NewClip() Clip {
 
 func (clip *Clip) Init(steps int, bars int, loop bool) {
 	clip.Notes = make([]midi.Note, steps)
+	clip.Velocities = make([]uint8, steps)
+
 	clip.bars = bars
 	clip.pos = 0
-	clip.iterator = func() midi.Note {
+	clip.iterator = func() (midi.Note, uint8) {
 		// fmt.Printf("next() pos: %v\n", pos)
 		next := clip.Notes[clip.pos]
 		// next.Print()
@@ -36,14 +40,16 @@ func (clip *Clip) Init(steps int, bars int, loop bool) {
 		} else {
 			clip.pos = 0
 		}
-		return next
+		return next, clip.Velocities[clip.pos]
 	}
 	clip.loop = loop
 }
 
 func (clip *Clip) Randomize() {
 	for i := 0; i < clip.Steps(); i++ {
-		clip.Notes[i] = midi.Note(rand.Intn(100))
+		clip.Notes[i] = midi.Note(rand.Intn(127))
+		clip.Velocities[i] = uint8(rand.Intn(127))
+
 	}
 }
 func (clip *Clip) SetNote(position int, note midi.Note) {
@@ -67,10 +73,10 @@ func (clip *Clip) PrintSteps() string {
 	var sb strings.Builder
 	for i := 0; i < clip.Steps(); i++ {
 		if i == clip.pos {
-			sb.WriteString(fmt.Sprintf("[%v] ", clip.Notes[i].Value))
+			sb.WriteString(fmt.Sprintf("[%v] ", clip.Notes[i].Value()))
 
 		} else {
-			sb.WriteString(fmt.Sprintf("%v ", clip.Notes[i].Value))
+			sb.WriteString(fmt.Sprintf("%v ", clip.Notes[i].Value()))
 
 		}
 	}
@@ -78,7 +84,7 @@ func (clip *Clip) PrintSteps() string {
 	return sb.String()
 }
 
-func (clip *Clip) Next() midi.Note {
+func (clip *Clip) Next() (midi.Note, uint8) {
 	return clip.iterator()
 }
 
