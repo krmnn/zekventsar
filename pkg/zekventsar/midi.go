@@ -7,6 +7,14 @@ import (
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
 
+func GetNoteStrings() []string {
+	notes := make([]string, 127)
+	for i := uint8(0); i < 127; i++ {
+		notes[i] = fmt.Sprintf("%v", midi.Note(i).String())
+	}
+	return notes
+}
+
 type MidiContext struct {
 	channel uint8
 	send    func(msg midi.Message) error

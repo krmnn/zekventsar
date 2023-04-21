@@ -37,7 +37,18 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 
 	mainWindow := app.NewWindow("zekventsar v0.1")
 
-	label := widget.NewLabel("zekventsar v0.1")
+	clipView := container.New(layout.NewHBoxLayout())
+	options := zekventsar.GetNoteStrings()
+	for i := 0; i < clip.Steps; i++ {
+		new := widget.NewSelect(options, func(selected string) {
+			log.Println(selected, " selected!")
+		})
+		log.Println("want to select: ", clip.Notes[i].String())
+		new.Alignment = fyne.TextAlignCenter
+		new.SetSelected(clip.Notes[i].String())
+		clipView.Add(new)
+	}
+
 	statusLabel := widget.NewLabel("0 / 0")
 	bpmLabel := widget.NewLabel("100 bpm")
 	bpmSlider := widget.NewSliderWithData(0, 300.0, binding.BindFloat(&sequencer.Bpm))
@@ -56,7 +67,6 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 		clip.Randomize()
 	})
 	tools := container.New(layout.NewVBoxLayout(), transport, button, bpmLabel, bpmSlider)
-	clipView := container.New(layout.NewVBoxLayout(), label, statusLabel)
 	content := container.New(layout.NewHBoxLayout(), clipView, tools)
 
 	mainWindow.SetContent(content)
@@ -65,10 +75,10 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 		for range time.Tick(time.Second) {
 			notes, _ := boundClip.GetValue("Notes")
 			velocities, _ := boundClip.GetValue("Velocities")
-			pos, _ := boundSequencer.GetValue("Pos")
+			// pos, _ := boundSequencer.GetValue("Pos")
 			log.Printf("notes      = %v", notes)
 			log.Printf("velocities = %v", velocities)
-			label.SetText(fmt.Sprintf("%v\npos: %v", notes, pos))
+			// label.SetText(fmt.Sprintf("%v\npos: %v", notes, pos))
 
 			bars, _ := boundClip.GetValue("Bars")
 			steps, _ := boundClip.GetValue("Steps")
