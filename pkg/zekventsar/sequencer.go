@@ -53,11 +53,11 @@ func (sequencer *Sequencer) Play(clip Clip) {
 				sequencer.Pos = i
 				go sequencer.midiCtx.Send(note.Value(), velocity)
 
-				if i < clip.Steps()-1 {
+				if i < clip.Steps-1 {
 					i++
 				} else {
 					i = 0
-					if !clip.IsLoop() {
+					if !clip.Loop {
 						return
 					}
 				}
