@@ -51,7 +51,7 @@ func (sequencer *Sequencer) Play(clip Clip) {
 				// fmt.Println("Current time: ", t)
 				note := clip.Next()
 				sequencer.Pos = i
-				go sequencer.midiCtx.Send(uint8(note.Value), note_duration_ms)
+				go sequencer.midiCtx.Send(note.Value(), note_duration_ms)
 
 				if i < clip.Steps()-1 {
 					i++

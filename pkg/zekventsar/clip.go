@@ -4,23 +4,17 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+
+	"gitlab.com/gomidi/midi/v2"
 )
 
-// TODO: replace with midi lib
-type Note struct {
-	Value int
-}
-
-func (note *Note) Print() {
-	fmt.Printf("note={midiValue: %v}\n", note.Value)
-}
-
 type Clip struct {
-	bars     int
-	Notes    []Note
-	pos      int
-	iterator func() Note
-	loop     bool
+	bars  int
+	Notes []midi.Note
+	pos   int
+	loop  bool
+
+	iterator func() midi.Note
 }
 
 func NewClip() Clip {
@@ -30,10 +24,10 @@ func NewClip() Clip {
 }
 
 func (clip *Clip) Init(steps int, bars int, loop bool) {
-	clip.Notes = make([]Note, steps)
+	clip.Notes = make([]midi.Note, steps)
 	clip.bars = bars
 	clip.pos = 0
-	clip.iterator = func() Note {
+	clip.iterator = func() midi.Note {
 		// fmt.Printf("next() pos: %v\n", pos)
 		next := clip.Notes[clip.pos]
 		// next.Print()
@@ -49,10 +43,10 @@ func (clip *Clip) Init(steps int, bars int, loop bool) {
 
 func (clip *Clip) Randomize() {
 	for i := 0; i < clip.Steps(); i++ {
-		clip.Notes[i] = Note{Value: rand.Intn(100)}
+		clip.Notes[i] = midi.Note(rand.Intn(100))
 	}
 }
-func (clip *Clip) SetNote(position int, note Note) {
+func (clip *Clip) SetNote(position int, note midi.Note) {
 	if position < clip.Steps() {
 		clip.Notes[position] = note
 	}
@@ -84,7 +78,7 @@ func (clip *Clip) PrintSteps() string {
 	return sb.String()
 }
 
-func (clip *Clip) Next() Note {
+func (clip *Clip) Next() midi.Note {
 	return clip.iterator()
 }
 
