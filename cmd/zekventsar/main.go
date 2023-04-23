@@ -62,7 +62,7 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 
 	statusLabel := widget.NewLabel("0 / 0")
 	bpmLabel := widget.NewLabel("100 bpm")
-	bpmSlider := widget.NewSliderWithData(0, 300.0, binding.BindFloat(&sequencer.Bpm))
+	bpmSlider := widget.NewSliderWithData(0, 400.0, binding.BindFloat(&sequencer.Bpm))
 	stopButton := widget.NewButton("stop", func() {
 		log.Println("stop!")
 		sequencer.Stop()

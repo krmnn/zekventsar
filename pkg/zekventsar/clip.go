@@ -15,7 +15,7 @@ type Clip struct {
 	Bars  uint8
 	Steps uint8
 
-	Pos uint8
+	// Pos uint8
 
 	iterator func() (midi.Note, uint8)
 }
@@ -32,17 +32,17 @@ func (clip *Clip) Init(steps uint8, bars uint8, loop bool) {
 	clip.Velocities = make([]uint8, steps)
 
 	clip.Bars = bars
-	clip.Pos = 0
+	pos := uint8(0)
 	clip.iterator = func() (midi.Note, uint8) {
 		// fmt.Printf("next() pos: %v\n", pos)
-		next := clip.Notes[clip.Pos]
+		next := clip.Notes[pos]
 		// next.Print()
-		if clip.Pos < clip.Steps-1 {
-			clip.Pos++
+		if pos < clip.Steps-1 {
+			pos++
 		} else {
-			clip.Pos = 0
+			pos = 0
 		}
-		return next, clip.Velocities[clip.Pos]
+		return next, clip.Velocities[pos]
 	}
 }
 
@@ -63,13 +63,8 @@ func (clip *Clip) SetStep(position uint8, note midi.Note, velocity uint8) {
 func (clip *Clip) PrintSteps() string {
 	var sb strings.Builder
 	for i := uint8(0); i < clip.Steps; i++ {
-		if i == clip.Pos {
-			sb.WriteString(fmt.Sprintf("[%v] ", clip.Notes[i].Value()))
+		sb.WriteString(fmt.Sprintf("%v ", clip.Notes[i].Value()))
 
-		} else {
-			sb.WriteString(fmt.Sprintf("%v ", clip.Notes[i].Value()))
-
-		}
 	}
 	fmt.Println(sb.String())
 	return sb.String()

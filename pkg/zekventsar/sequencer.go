@@ -49,6 +49,7 @@ func (sequencer *Sequencer) Play() {
 	sequencer.ticker = time.NewTicker(time.Duration(sequencer.beatDurationMs) * time.Millisecond)
 	sequencer.Running = true
 
+	lastBpm := sequencer.Bpm
 	go func() {
 		i := uint8(0)
 		for {
@@ -63,6 +64,13 @@ func (sequencer *Sequencer) Play() {
 				sequencer.Pos = i
 				go sequencer.midiCtx.Send(note.Value(), velocity)
 
+				if sequencer.Bpm != lastBpm {
+					fmt.Printf("adapt bpm to %v period %v\n", sequencer.Bpm, sequencer.beatDurationMs)
+					sequencer.SyncBpm(sequencer.Bpm)
+					sequencer.ticker.Reset(time.Duration(sequencer.beatDurationMs) * time.Millisecond)
+					lastBpm = sequencer.Bpm
+				}
+
 				if i < sequencer.clip.Steps-1 {
 					i++
 				} else {
@@ -74,6 +82,10 @@ func (sequencer *Sequencer) Play() {
 			}
 		}
 	}()
+}
+func (sequencer *Sequencer) SyncBpm(bpm float64) {
+	sequencer.beatDurationMs = 60.0 * 1000 / bpm
+	// sequencer.Bpm = bpm data binding!
 }
 
 func (sequencer *Sequencer) Stop() {
