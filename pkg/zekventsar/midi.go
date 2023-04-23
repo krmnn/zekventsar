@@ -8,8 +8,9 @@ import (
 )
 
 func GetNoteStrings() []string {
-	notes := make([]string, 127)
-	for i := uint8(0); i < 127; i++ {
+	notes := make([]string, 128)
+	notes[0] = "-"
+	for i := uint8(1); i < 128; i++ {
 		notes[i] = fmt.Sprintf("%v", midi.Note(i).String())
 	}
 	return notes

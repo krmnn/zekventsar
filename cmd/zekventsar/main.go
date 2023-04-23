@@ -19,10 +19,11 @@ func main() {
 	log.Println("zekventsar v0.1")
 
 	defaultClip := zekventsar.NewClip()
+	// defaultClip.Init(1, 4, false)
 	defaultClip.Randomize()
 
 	defaultSequencer := zekventsar.NewSequencer(180)
-	defaultSequencer.Play(defaultClip)
+	defaultSequencer.Load(defaultClip)
 
 	mainApp := app.New()
 	mainWindow(mainApp, defaultSequencer, defaultClip)
@@ -37,38 +38,53 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 
 	mainWindow := app.NewWindow("zekventsar v0.1")
 
-	clipView := container.New(layout.NewHBoxLayout())
+	clipView := container.New(layout.NewGridLayout(8))
 	options := zekventsar.GetNoteStrings()
-	for i := 0; i < clip.Steps; i++ {
+	for i := uint8(0); i < clip.Steps; i++ {
 		new := widget.NewSelect(options, func(selected string) {
 			log.Println(selected, " selected!")
+
 		})
 		log.Println("want to select: ", clip.Notes[i].String())
 		new.Alignment = fyne.TextAlignCenter
 		new.SetSelected(clip.Notes[i].String())
-		clipView.Add(new)
+
+		velocitySlider := widget.NewSlider(0, 127.0)
+		velocitySlider.Orientation = widget.Vertical
+		velocitySlider.Value = float64(clip.Velocities[i])
+		velocitySlider.Step = 1
+
+		stepBox := container.New(layout.NewVBoxLayout(), new, velocitySlider)
+
+		clipView.Add(stepBox)
+
 	}
 
 	statusLabel := widget.NewLabel("0 / 0")
 	bpmLabel := widget.NewLabel("100 bpm")
 	bpmSlider := widget.NewSliderWithData(0, 300.0, binding.BindFloat(&sequencer.Bpm))
-
-	// widgets with data binding
 	stopButton := widget.NewButton("stop", func() {
 		log.Println("stop!")
+		sequencer.Stop()
+
+	})
+	pauseButton := widget.NewButton("pause", func() {
+		log.Println("Pause!")
 	})
 	playButton := widget.NewButton("play", func() {
 		log.Println("play!")
+		sequencer.Play()
+
 	})
-	transport := container.New(layout.NewHBoxLayout(), stopButton, playButton)
+	transport := container.New(layout.NewHBoxLayout(), stopButton, pauseButton, playButton)
 
 	button := widget.NewButton("randomize!", func() {
 		log.Println("randomize!")
 		clip.Randomize()
 	})
 	tools := container.New(layout.NewVBoxLayout(), transport, button, bpmLabel, bpmSlider)
-	content := container.New(layout.NewHBoxLayout(), clipView, tools)
 
+	content := container.New(layout.NewHBoxLayout(), clipView, tools)
 	mainWindow.SetContent(content)
 
 	go func() {

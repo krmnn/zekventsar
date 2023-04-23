@@ -12,11 +12,10 @@ type Clip struct {
 	Notes      []midi.Note
 	Velocities []uint8
 
-	Bars  int
-	Steps int
+	Bars  uint8
+	Steps uint8
 
-	Pos  int
-	Loop bool
+	Pos uint8
 
 	iterator func() (midi.Note, uint8)
 }
@@ -27,7 +26,7 @@ func NewClip() Clip {
 	return clip
 }
 
-func (clip *Clip) Init(steps int, bars int, loop bool) {
+func (clip *Clip) Init(steps uint8, bars uint8, loop bool) {
 	clip.Steps = steps
 	clip.Notes = make([]midi.Note, steps)
 	clip.Velocities = make([]uint8, steps)
@@ -45,25 +44,25 @@ func (clip *Clip) Init(steps int, bars int, loop bool) {
 		}
 		return next, clip.Velocities[clip.Pos]
 	}
-	clip.Loop = loop
 }
 
 func (clip *Clip) Randomize() {
-	for i := 0; i < clip.Steps; i++ {
+	for i := uint8(0); i < clip.Steps; i++ {
 		clip.Notes[i] = midi.Note(rand.Intn(127))
 		clip.Velocities[i] = uint8(rand.Intn(127))
 
 	}
 }
-func (clip *Clip) SetNote(position int, note midi.Note) {
-	if position < clip.Steps {
+
+func (clip *Clip) SetStep(position uint8, note midi.Note, velocity uint8) {
+	if (uint8(0) <= position) && (position <= clip.Steps) {
 		clip.Notes[position] = note
 	}
 }
 
 func (clip *Clip) PrintSteps() string {
 	var sb strings.Builder
-	for i := 0; i < clip.Steps; i++ {
+	for i := uint8(0); i < clip.Steps; i++ {
 		if i == clip.Pos {
 			sb.WriteString(fmt.Sprintf("[%v] ", clip.Notes[i].Value()))
 
