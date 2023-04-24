@@ -33,12 +33,14 @@ func (sequencer *Sequencer) Init() {
 	sequencer.beatDurationMs = 60.0 * 1000 / sequencer.Bpm
 	sequencer.Running = false
 	sequencer.Loop = true
+	sequencer.Pos = 0
 	sequencer.done = make(chan bool)
 
 }
 
 func (sequencer *Sequencer) Load(clip Clip) {
 	sequencer.clip = &clip
+	sequencer.Pos = 0
 	sequencer.Running = false
 
 }
@@ -51,7 +53,6 @@ func (sequencer *Sequencer) Play() {
 
 	lastBpm := sequencer.Bpm
 	go func() {
-		i := uint8(0)
 		for {
 			select {
 			case <-sequencer.done:
@@ -61,7 +62,6 @@ func (sequencer *Sequencer) Play() {
 			case t := <-sequencer.ticker.C:
 				fmt.Println("Current time: ", t)
 				note, velocity := sequencer.clip.Next()
-				sequencer.Pos = i
 				go sequencer.midiCtx.Send(note.Value(), velocity)
 
 				if sequencer.Bpm != lastBpm {
@@ -71,10 +71,10 @@ func (sequencer *Sequencer) Play() {
 					lastBpm = sequencer.Bpm
 				}
 
-				if i < sequencer.clip.Steps-1 {
-					i++
+				if sequencer.Pos < sequencer.clip.Steps-1 {
+					sequencer.Pos++
 				} else {
-					i = 0
+					sequencer.Pos = 0
 					if !sequencer.Loop {
 						return
 					}
@@ -87,9 +87,14 @@ func (sequencer *Sequencer) SyncBpm(bpm float64) {
 	sequencer.beatDurationMs = 60.0 * 1000 / bpm
 	// sequencer.Bpm = bpm data binding!
 }
-
+func (sequencer *Sequencer) Pause() {
+	sequencer.ticker.Stop()
+	sequencer.done <- true
+	sequencer.Running = false
+}
 func (sequencer *Sequencer) Stop() {
 	sequencer.ticker.Stop()
 	sequencer.done <- true
 	sequencer.Running = false
+	sequencer.Pos = 0
 }

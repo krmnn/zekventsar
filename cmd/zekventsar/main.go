@@ -70,6 +70,7 @@ func mainWindow(app fyne.App, sequencer zekventsar.Sequencer, clip zekventsar.Cl
 	})
 	pauseButton := widget.NewButton("pause", func() {
 		log.Println("Pause!")
+		sequencer.Pause()
 	})
 	playButton := widget.NewButton("play", func() {
 		log.Println("play!")
